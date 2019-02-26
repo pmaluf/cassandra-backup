@@ -23,24 +23,24 @@
 #====================================================================================
 
 ################################
-# VARIAVEIS DE CONEXAO         #
+# VARIABLE DECLARATION         #
 ################################
 CASSANDRA_HOST=`hostname`
 CASSANDRA_USER="cassandra"
 CASSANDRA_PASS="cassandra"
 
 ################################
-# VARIAVEIS GLOBAIS            #
+# GLOBAL VARIABLES             #
 ################################
 SCRIPT_DIR=`pwd`
-SCRIPT_NAME=`basename $1 | sed -e 's/\.sh$//'`
+SCRIPT_NAME=$(basename `echo $0`)
 SCRIPT_LOGDIR="${SCRIPT_DIR}/logs"
 LOGFILE=${SCRIPT_NAME}.log
 NODETOOL=`which nodetool`
 MAIL_LST="dba@domain"
 
 ################################
-# FUNCOES                      #
+# FUNCTIONS                    #
 ################################
 help()
 {
@@ -67,29 +67,28 @@ log (){
 }
 
 clearsnap(){
-  log "Deletando o snapshot antigo..."
+  log "Delete all existing snapshots.."
   ${NODETOOL} -h ${CASSANDRA_HOST} -u ${CASSANDRA_USER} -pw ${CASSANDRA_PASS} clearsnapshot ; RETVAL=$?
   if [ "${RETVAL}." == "0." ]
    then
-    log "Snapshot removido com sucesso" 0
+    log "Snapshots removed successfully" 0
    else
-    log "Falha ao remover o ultimo snapshot." 1
+    log "Failure in deleting snapshots" 1
   fi
 }
 
 takesnap(){
-  log "Criando o snapshot..."
+  log "Creating snapshot..."
   SNAPSHOT_NAME="snapshot_`date +"%Y%m%d_%H%M"`"
   ${NODETOOL} -h ${CASSANDRA_HOST} -u ${CASSANDRA_USER} -pw ${CASSANDRA_PASS} snapshot -t ${SNAPSHOT_NAME} ; RETVAL=$?
   if [ "${RETVAL}." == "0." ]
    then
-    log "Snapshot criado com sucesso" 0
+    log "Snapshot created successfully" 0
    else
-    log "Falha ao criar o snapshot." 1
+    log "Error occurred in creating snapshots" 1
   fi
 }
 
-# Tratamento dos Parametros
 for arg
 do
     delim=""
@@ -108,9 +107,9 @@ done
 
 eval set -- $args
 
-while getopts ":hu:p:b:H:" PARAMETRO
+while getopts ":h:u:p:b:H:" PARAMETER
 do
-    case $PARAMETRO in
+    case $PARAMETER in
         h) help;;
         H) CASSANDRA_HOST=${OPTARG[@]};;
         u) CASSANDRA_USER=${OPTARG[@]};;
@@ -120,6 +119,7 @@ do
     esac
 done
 
-# Inicio
+# Execution
 clearsnap
 takesnap
+
